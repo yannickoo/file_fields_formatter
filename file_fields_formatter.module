@@ -1,0 +1,115 @@
+<?php
+
+/**
+ * @file
+ * Main file fo File field formatter module.
+ */
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function file_fields_formatter_field_formatter_info() {
+  return array(
+    'file_field' => array(
+      'label' => t('Field of file entity'),
+      'field types' => array('file'),
+      'settings' => array(
+        'field' => '',
+        'view_mode' => '',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function file_fields_formatter_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  // This gets the view mode where the settings are stored.
+  $display = $instance['display'][$view_mode];
+  // This gets the settings.
+  $settings = $display['settings'];
+
+  $element = array();
+
+  // Getting all file entity fields.
+  $file_bundles = field_info_instances('file');
+
+  foreach ($file_bundles as $bundle_name => $bundle_info) {
+    foreach ($bundle_info as $field_name => $field_info) {
+      $fields[$field_name] = $field_info['label'];
+    }
+  }
+
+  $element['field'] = array(
+    '#type' => 'select',
+    '#title' => t('Field'),
+    '#options' => $fields,
+    '#default_value' => $settings['field'],
+    '#required' => TRUE,
+    '#description' => t('Select the field which should be displayed.'),
+  );
+
+  // Storing view modes here.
+  $view_modes = array();
+  $target_entity_info = entity_get_info('file');
+
+  foreach ($target_entity_info['view modes'] as $view_mode_name => $view_mode) {
+    $view_modes[$view_mode_name] = $view_mode['label'];
+  }
+
+  $element['view_mode'] = array(
+    '#type' => 'select',
+    '#title' => t('View mode'),
+    '#options' => $view_modes,
+    '#default_value' => $settings['view_mode'],
+    '#description' => t('The view mode which should be used.'),
+    '#empty_option' => t('Select view mode'),
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function file_fields_formatter_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = '';
+
+  if ($settings['field']) {
+    $summary[] = t('Field: @field', array('@field' => $settings['field']));
+  }
+
+  if ($settings['view_mode']) {
+    $summary[] = t('View mode: @view_mode', array('@view_mode' => $settings['view_mode']));
+  }
+
+  $summary = implode('<br>', $summary);
+
+  return $summary;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function file_fields_formatter_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  // This is where the output will be.
+  $element = array();
+  // Store the field formatter settings.
+  $settings = $display['settings'];
+  // Normalize the settings.
+  $field_name = $settings['field'];
+  $view_mode = $settings['view_mode'] ? $settings['view_mode'] : array();
+
+  foreach ($items as $delta => $item) {
+    // We need the entity.
+    $file = file_load($item['fid']);
+
+    $element[$delta] = field_view_field('file', $file, $field_name, $view_mode);
+  }
+
+  return $element;
+}
