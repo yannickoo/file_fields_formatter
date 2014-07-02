@@ -1,4 +1,4 @@
 name = File field formatter
-description = Provides a field formatter which allows you to display a field of the file entity.
+description = Provides a field formatter which allows you to display a single field of the file entity.
 core = 7.x
 dependencies[] = file_entity

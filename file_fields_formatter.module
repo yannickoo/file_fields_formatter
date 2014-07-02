@@ -87,7 +87,7 @@ function file_fields_formatter_field_formatter_settings_summary($field, $instanc
     $summary[] = t('View mode: @view_mode', array('@view_mode' => $settings['view_mode']));
   }
 
-  $summary = implode('<br>', $summary);
+  $summary = implode('<br />', $summary);
 
   return $summary;
 }
